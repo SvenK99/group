@@ -13,12 +13,11 @@ from firebase_admin import firestore
 from flask import Flask, request
 
 app = Flask(__name__)
-updater = None
-dispatcher = None
 
 # Flask route for webhook
 @app.route('/webhook', methods=['POST'])
 def webhook():
+    global updater, dispatcher
     data = request.get_json()  # 获取 POST 请求的 JSON 数据
     # 将 webhook 数据传递给 Telegram 更新器的 Dispatcher
     update = Update.de_json(data, updater.bot)  # 解析来自 Telegram 的请求数据
@@ -26,6 +25,7 @@ def webhook():
     return 'OK', 200  # 返回响应，告诉 Telegram 请求已处理
 
 def main():
+    global updater, dispatcher
     # Load your token and create an Updater for your Bot
     config = configparser.ConfigParser()
     config.read('config.ini')
