@@ -1,3 +1,4 @@
+import json
 from telegram import Update
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, CallbackContext)
 import configparser
@@ -42,7 +43,8 @@ def main():
     Firebase_key = os.environ.get("FIREBASE_CREDENTIALS")
     if not Firebase_key:
         raise ValueError("环境变量 FIREBASE_CREDENTIALS 未设置")
-    cred = credentials.Certificate(Firebase_key)
+    cred_dict = json.loads(Firebase_key)
+    cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
 
     # Initialize ChatGPT object
