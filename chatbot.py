@@ -24,8 +24,11 @@ def main():
     config = configparser.ConfigParser()
     config.read('config.ini')
 
+    telegram_token = os.environ.get("ACCESS_TOKEN_TG")
+    if not telegram_token:
+        raise ValueError("环境变量 ACCESS_TOKEN_TG 未设置")
     # 在香港用这个updater
-    updater = Updater(token=(config['TELEGRAM']['ACCESS_TOKEN']), use_context=True)
+    updater = Updater(token=telegram_token, use_context=True)
 
     # # 在国内用这个updater,python-telegram-bot 13.7 不能直接用updater来传入request需要经过Bot对象
     # ## 创建Bot对象时传入代理
@@ -36,7 +39,10 @@ def main():
     dispatcher = updater.dispatcher
 
     # 连接Firebase数据库
-    cred = credentials.Certificate(config['FIREBASE']['CREDENTIALS'])
+    Firebase_key = os.environ.get("FIREBASE_CREDENTIALS")
+    if not Firebase_key:
+        raise ValueError("环境变量 FIREBASE_CREDENTIALS 未设置")
+    cred = credentials.Certificate(Firebase_key)
     firebase_admin.initialize_app(cred)
 
     # Initialize ChatGPT object
