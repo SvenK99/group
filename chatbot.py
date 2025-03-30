@@ -10,15 +10,16 @@ import os
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from flask import Flask, request
 
-# 在国内要设置代理，updater对象也要更新
-# proxy1 = {
-#     'proxy_url': 'http://127.0.0.1:10809',  # 代理地址
-# }
-# request = Request(proxy_url=proxy1['proxy_url'])
-# # 在国内要设置 HTTP/HTTPS 代理
-# os.environ["http_proxy"] = "http://127.0.0.1:10809"
-# os.environ["https_proxy"] = "http://127.0.0.1:10809"
+app = Flask(__name__)
+
+# Flask route for webhook
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.json
+    # Handle the incoming webhook data
+    return 'OK', 200
 
 def main():
     # Load your token and create an Updater for your Bot
@@ -27,22 +28,16 @@ def main():
 
     telegram_token = os.environ.get("ACCESS_TOKEN_TG")
     if not telegram_token:
-        raise ValueError("环境变量 ACCESS_TOKEN_TG 未设置")
-    # 在香港用这个updater
+        raise ValueError("Environment variable ACCESS_TOKEN_TG is not set")
+
+    # Set up Telegram bot with webhook
     updater = Updater(token=telegram_token, use_context=True)
-
-    # # 在国内用这个updater,python-telegram-bot 13.7 不能直接用updater来传入request需要经过Bot对象
-    # ## 创建Bot对象时传入代理
-    # bot = Bot(token=config['TELEGRAM']['ACCESS_TOKEN'], request=request)
-    # ## 使用Bot对象来创建Updater对象
-    # updater = Updater(bot=bot, use_context=True)
-
     dispatcher = updater.dispatcher
 
-    # 连接Firebase数据库
+    # Firebase setup
     Firebase_key = os.environ.get("FIREBASE_CREDENTIALS")
     if not Firebase_key:
-        raise ValueError("环境变量 FIREBASE_CREDENTIALS 未设置")
+        raise ValueError("Environment variable FIREBASE_CREDENTIALS is not set")
     cred_dict = json.loads(Firebase_key)
     cred = credentials.Certificate(cred_dict)
     firebase_admin.initialize_app(cred)
@@ -61,19 +56,16 @@ def main():
     dispatcher.add_handler(CommandHandler("add", add))
     dispatcher.add_handler(CommandHandler("help", help_command))
 
-    # Start the bot
-    updater.start_polling()
-    updater.idle()
+    # Set up webhook for Telegram Bot
+    webhook_url = os.environ.get("WEBHOOK_URL")  # This should be your server's public URL
+    updater.bot.set_webhook(url=webhook_url + '/webhook')
+
+    # Start Flask web server
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))  # Start the Flask app
 
 def equiped_chatgpt(update, context):
     global chatgpt
     reply_message = chatgpt.submit(update.message.text)
-    logging.info("Update: " + str(update))
-    logging.info("context: " + str(context))
-    context.bot.send_message(chat_id=update.effective_chat.id, text=reply_message)
-
-def echo(update, context):
-    reply_message = update.message.text.upper()
     logging.info("Update: " + str(update))
     logging.info("context: " + str(context))
     context.bot.send_message(chat_id=update.effective_chat.id, text=reply_message)
@@ -91,8 +83,7 @@ def add(update: Update, context: CallbackContext) -> None:
     """Add a keyword to the database and increment its count."""
     try:
         db = firestore.client()
-        logging.info(context.args[0])
-        msg = context.args[0]  # /add keyword <-- this should store the keyword
+        msg = context.args[0]
 
         doc_ref = db.collection("keywords").document(msg)
         if doc_ref.get().exists:
@@ -109,8 +100,7 @@ def delete(update: Update, context: CallbackContext) -> None:
     """Delete a keyword from the database."""
     try:
         db = firestore.client()
-        logging.info(context.args[0])
-        msg = context.args[0]  # /delete keyword <-- this should delete the keyword
+        msg = context.args[0]
 
         doc_ref = db.collection("keywords").document(msg)
         if doc_ref.get().exists:
