@@ -14,7 +14,7 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-# Flask route for webhook
+# Flask route for webhook1
 @app.route('/webhook', methods=['POST'])
 def webhook():
     global updater, dispatcher
