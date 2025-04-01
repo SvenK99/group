@@ -120,5 +120,45 @@ def delete(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /delete <keyword>')
 
+def load_groups_data():
+    """
+    从数据库中加载所有群组信息，并将其转化为 ChatGPT 可理解的格式
+    """
+    db = firestore.client()
+    groups_ref = db.collection("groups")  # 获取所有群组
+    all_groups = groups_ref.stream()
+
+    groups_data = []
+    for doc in all_groups:
+        group = doc.to_dict()
+        group_info = f"群组名称: {group['name']}\n链接: {group['link']}\n标签: {', '.join(group['tags'])}"
+        groups_data.append(group_info)
+
+    # 将所有群组数据合并为一个大的文本块，ChatGPT 会理解这些信息
+    return "\n\n".join(groups_data)
+
+def equiped_chatgpt(update, context):
+    """
+    处理用户输入，基于 ChatGPT 推荐群组
+    """
+    user_message = update.message.text.strip()  # 获取用户消息
+    group_keywords = ["群组", "群", "兴趣", "group", "chat group", 'groups']
+    global chatgpt
+    if any(keyword in user_message for keyword in group_keywords):
+        # 加载所有群组数据
+        groups_data = load_groups_data()
+
+        # 将群组数据作为上下文传递给 ChatGPT
+        context_for_gpt = f"以下是一些群组信息:\n\n{groups_data}\n\n用户问：{user_message}\n\n请根据用户的问题推荐相关的群组："
+
+        # 使用 ChatGPT 根据输入和群组数据生成推荐
+        reply_message = chatgpt.submit(context_for_gpt)
+
+    else:
+        reply_message = chatgpt.submit(user_message)  # 使用 ChatGPT 生成回复
+        logging.info("Update: " + str(update))
+        logging.info("Context: " + str(context))
+    context.bot.send_message(chat_id=update.effective_chat.id, text=reply_message)  # 发送 ChatGPT 回复
+
 if __name__ == '__main__':
     main()
