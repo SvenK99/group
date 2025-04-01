@@ -149,7 +149,7 @@ def equiped_chatgpt(update, context):
         groups_data = load_groups_data()
 
         # 将群组数据作为上下文传递给 ChatGPT
-        context_for_gpt = f"以下是一些群组信息:\n\n{groups_data}\n\n用户问：{user_message}\n\n请根据用户的问题并推荐相关的群组：（用用户所用的语言回答问题）"
+        context_for_gpt = f"以下是一些群组信息:\n\n{groups_data}\n\n用户问：{user_message}\n\n请根据用户的问题并推荐相关的群组：（翻译成用户所用的语言回答问题）"
 
         # 使用 ChatGPT 根据输入和群组数据生成推荐
         reply_message = chatgpt.submit(context_for_gpt)
