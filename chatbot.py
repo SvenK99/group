@@ -144,12 +144,16 @@ def equiped_chatgpt(update, context):
     user_message = update.message.text.strip()  # 获取用户消息
     group_keywords = ["群组", "群", "兴趣", "group", "chat group", 'groups']
     global chatgpt
+    user_language = update.message.from_user.language_code
     if any(keyword in user_message for keyword in group_keywords):
         # 加载所有群组数据
         groups_data = load_groups_data()
 
         # 将群组数据作为上下文传递给 ChatGPT
-        context_for_gpt = f"（翻译成用户a所用的语言回答问题）以下是一些群组信息:\n\n{groups_data}\n\n用户a问：{user_message}\n\n请根据用户的问题并推荐相关的群组："
+        if user_language == "zh":
+            context_for_gpt = f"请用中文回答以下问题:\n\n以下是一些群组信息:\n\n{groups_data}\n\n用户问：{user_message}\n\n请根据用户的问题推荐相关的群组："
+        else:
+            context_for_gpt = f"Please answer in English:\n\nHere are some group details:\n\n{groups_data}\n\nUser asks: {user_message}\n\nPlease recommend related groups based on the user's query:"
 
         # 使用 ChatGPT 根据输入和群组数据生成推荐
         reply_message = chatgpt.submit(context_for_gpt)
