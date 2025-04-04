@@ -1,0 +1,35 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - master  # 监听 master 分支
+
+jobs:
+  deploy:
+    name: Deploy app to Heroku
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Login to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo $HEROKU_API_KEY | heroku auth:token
+
+      - name: Set Heroku Buildpack (if needed)
+        run: |
+          heroku buildpacks:set heroku/python --app ksy-chatbot  # Python 项目
+          # 如果是 Node.js，改成：
+          # heroku buildpacks:set heroku/nodejs --app ksy-chatbot
+
+      - name: Deploy to Heroku
+        run: |
+          git push https://heroku:$HEROKU_API_KEY@git.heroku.com/ksy-chatbot.git master
