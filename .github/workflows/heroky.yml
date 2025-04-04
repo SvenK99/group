@@ -30,8 +30,8 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/ksy-chatbot.git || true
-          git config --global user.email "your-email@example.com"
-          git config --global user.name "your-github-username"
+          git config --global user.email "sven.feiyu@gmail.com"
+          git config --global user.name "SvenK99"
 
       - name: Deploy to Heroku
         run: |
