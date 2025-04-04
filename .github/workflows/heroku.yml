@@ -1,0 +1,14 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: heroku container:push web --app ksy-chatbot
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
