@@ -1,0 +1,6 @@
+build:
+  docker:
+    web: Dockerfile  # 指定你的 Dockerfile 来构建容器
+
+run:
+  web: python chatbot.py  # 或者你可能使用 gunicorn 来启动应用
