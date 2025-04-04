@@ -31,4 +31,4 @@ jobs:
 
       - name: Deploy to Heroku
         run: |
-          git push https://heroku:$HEROKU_API_KEY@git.heroku.com/ksy-chatbot.git main
+          git push https://heroku:$HEROKU_API_KEY@git.heroku.com/ksy-chatbot.git master
