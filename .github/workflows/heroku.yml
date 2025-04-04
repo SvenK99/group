@@ -2,13 +2,31 @@ name: Deploy to Heroku
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master ]  # 监听 master 分支的 push 事件
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - run: heroku container:push web --app ksy-chatbot
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Login to Heroku
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo $HEROKU_API_KEY | heroku auth:token
+
+      - name: Push Docker container to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: "ksy-chatbot"  # 替换为你的 Heroku 应用名
+        run: |
+          heroku container:login
+          heroku container:push web --app $HEROKU_APP_NAME
+          heroku container:release web --app $HEROKU_APP_NAME
