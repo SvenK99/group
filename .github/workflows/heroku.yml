@@ -3,7 +3,7 @@ name: Deploy to Heroku
 on:
   push:
     branches:
-      - main  # 监听 main 分支的 push 事件
+      - master  # 监听 main 分支的 push 事件
 
 jobs:
   deploy:
